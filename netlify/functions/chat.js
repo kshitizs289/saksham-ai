@@ -1,11 +1,7 @@
 exports.handler = async function (event) {
-  // Only allow POST
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method not allowed' }) };
   }
-
-  // Optional: Rate limit by IP (basic, stateless)
-  // For real rate limiting use Netlify Edge Functions + KV store
 
   let body;
   try {
@@ -19,11 +15,10 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'messages array required' }) };
   }
 
-  // Validate message structure (basic safety)
   const cleaned = messages
     .filter(m => m && typeof m.content === 'string' && ['user', 'assistant'].includes(m.role))
-    .map(m => ({ role: m.role, content: m.content.slice(0, 8000) })) // cap per message
-    .slice(-40); // keep last 40 messages max
+    .map(m => ({ role: m.role, content: m.content.slice(0, 8000) }))
+    .slice(-40);
 
   if (cleaned.length === 0) {
     return { statusCode: 400, body: JSON.stringify({ error: 'No valid messages' }) };
